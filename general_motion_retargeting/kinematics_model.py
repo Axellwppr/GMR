@@ -72,6 +72,7 @@ class KinematicsModel:
         
         self._build_kinematics_model()
         self._set_dof_indices()
+        self._build_joint_names_from_xml()
         
     def _build_kinematics_model(self):
         self._body_names = []
@@ -97,7 +98,67 @@ class KinematicsModel:
         if self._rot_unit == "degree":
             self._dof_lower_limits = torch.deg2rad(self._dof_lower_limits)
             self._dof_upper_limits = torch.deg2rad(self._dof_upper_limits)
-        
+
+    def _build_joint_names_from_xml(self):
+        tree = ET.parse(self._file_path)
+        xml_doc_root = tree.getroot()
+        xml_world_body = xml_doc_root.find("worldbody")
+        assert xml_world_body is not None, "worldbody not found"
+        xml_body_root = xml_world_body.find("body")
+        assert xml_body_root is not None, "body not found"
+
+        names = []
+
+        def suffix_from_axis(axis_str: str, fallback_idx: int) -> str:
+            if not axis_str:
+                return str(fallback_idx)
+            try:
+                ax = np.fromstring(axis_str, dtype=float, sep=" ")
+                if ax.size == 3:
+                    comp = int(np.argmax(np.abs(ax)))
+                    return "xyz"[comp]
+            except Exception:
+                pass
+            return str(fallback_idx)
+
+        def visit(xml_node):
+            body_name = xml_node.attrib.get("name", "unnamed_body")
+            joints = xml_node.findall("joint")
+            n = len(joints)
+
+            if n == 1:
+                j = joints[0]
+                jname = j.attrib.get("name")
+                if not jname:
+                    jname = body_name
+                names.append(jname)
+
+            elif n == 3:
+                for idx, j in enumerate(joints):
+                    jname = j.attrib.get("name")
+                    if not jname:
+                        suf = suffix_from_axis(j.attrib.get("axis"), idx)
+                        jname = f"{body_name}_{suf}"
+                    names.append(jname)
+
+            elif n == 0:
+                pass
+            else:
+                raise ValueError(f"Invalid number of joints: {n} on body {body_name}")
+
+            for child in xml_node.findall("body"):
+                visit(child)
+
+        visit(xml_body_root)
+
+        if len(names) != self._num_dof:
+            raise RuntimeError(
+                f"joint_names length mismatch: got {len(names)}, expected {self._num_dof}"
+            )
+
+        self.joint_names = names
+
+
     def _parse_xml(self):
         tree = ET.parse(self._file_path)
         xml_doc_root = tree.getroot()
@@ -123,7 +184,7 @@ class KinematicsModel:
             rot[..., 3] = rot_w
             
             if body_index == 0:
-                curr_joint = Joint(name=body_name, dof_dim=0, axis=None) # root
+                curr_joint = Joint(name=body_name, dof_dim=0, axis=None)
             else:
                 curr_joints = xml_node.findall("joint")
                 num_joints = len(curr_joints)

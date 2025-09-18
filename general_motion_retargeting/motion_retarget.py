@@ -6,6 +6,7 @@ import json
 from scipy.spatial.transform import Rotation as R
 from .params import ROBOT_XML_DICT, IK_CONFIG_DICT
 from rich import print
+import copy
 
 class GeneralMotionRetargeting:
     """General Motion Retargeting (GMR).
@@ -59,15 +60,20 @@ class GeneralMotionRetargeting:
         if verbose:
             print("Use IK config: ", IK_CONFIG_DICT[src_human][tgt_robot])
         
+        # Keep originals to enable dynamic resizing without reinit
+        self.human_height_assumption = ik_config["human_height_assumption"]
+        self.base_human_scale_table = copy.deepcopy(ik_config["human_scale_table"])  # for reuse
+
         # compute the scale ratio based on given human height and the assumption in the IK config
-        if actual_human_height is not None:
-            ratio = actual_human_height / ik_config["human_height_assumption"]
-        else:
-            ratio = 1.0
-            
-        # adjust the human scale table
-        for key in ik_config["human_scale_table"].keys():
-            ik_config["human_scale_table"][key] = ik_config["human_scale_table"][key] * ratio
+        ratio = (
+            actual_human_height / self.human_height_assumption
+            if actual_human_height is not None
+            else 1.0
+        )
+        # adjust the human scale table (scaled copy)
+        ik_config["human_scale_table"] = {
+            key: self.base_human_scale_table[key] * ratio for key in self.base_human_scale_table.keys()
+        }
     
 
         # used for retargeting
@@ -103,6 +109,29 @@ class GeneralMotionRetargeting:
         self.setup_retarget_configuration()
         
         self.ground_offset = 0.0
+
+    def reset_configuration(self):
+        """Reset the internal configuration state so retargeting can start fresh.
+        Useful for processing multiple independent sequences without re-initializing the robot model.
+        """
+        self.configuration = mink.Configuration(self.model)
+        # Optional: clear error histories if used
+        for d in (self.task_errors1, self.task_errors2):
+            for k in d.keys():
+                d[k].clear()
+
+    def set_human_height(self, actual_human_height: float | None):
+        """Dynamically update human scaling based on a new height.
+
+        This avoids reinitializing the retargeter for each new sequence with different human height.
+        """
+        if actual_human_height is None:
+            ratio = 1.0
+        else:
+            ratio = actual_human_height / self.human_height_assumption
+        self.human_scale_table = {
+            key: self.base_human_scale_table[key] * ratio for key in self.base_human_scale_table.keys()
+        }
 
     def setup_retarget_configuration(self):
         self.configuration = mink.Configuration(self.model)
