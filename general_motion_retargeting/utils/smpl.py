@@ -222,9 +222,11 @@ def get_smplx_data_offline_fast(smplx_data, body_model, smplx_output=None, tgt_f
     transl_tgt = _resample_trans(times_src, transl_src, times_tgt)
 
     frame_count = len(times_tgt)
-    betas = torch.tensor(smplx_data["betas"]).float().reshape(-1)
-    if betas.shape[0] < 16:
-        betas = torch.cat([betas, torch.zeros(16 - betas.shape[0]).float()], dim=0)
+    betas = torch.tensor(smplx_data["betas"]).float()
+    if betas.ndim > 1:
+        betas = betas[0]
+    if betas.shape[-1] < 16:
+        betas = torch.cat([betas, torch.zeros(16 - betas.shape[-1]).float()], dim=-1)
     else:
         betas = betas[:16]
     betas = betas.reshape(1, 16)
