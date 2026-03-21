@@ -19,7 +19,7 @@ class GeneralMotionRetargeting:
         solver: str="daqp", # change from "quadprog" to "daqp".
         damping: float=5e-1, # change from 1e-1 to 1e-2.
         verbose: bool=True,
-        use_velocity_limit: bool=False,
+        use_velocity_limit: bool=True,
     ) -> None:
 
         # load the robot model

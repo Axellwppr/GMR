@@ -1,18 +1,88 @@
 import argparse
 import pathlib
 import os
+import csv
+from types import SimpleNamespace
 import mujoco as mj
 import numpy as np
 from tqdm import tqdm
 import torch
 import pickle
 
-from general_motion_retargeting.utils.lafan1 import load_lafan1_file
+from general_motion_retargeting.utils.lafan1 import load_bvh_file
+from general_motion_retargeting.utils.xsens import load_xsens_file
 from general_motion_retargeting.kinematics_model import KinematicsModel
 from general_motion_retargeting import GeneralMotionRetargeting as GMR
 from rich import print
 from scipy.spatial.transform import Rotation as R, Slerp
 from scipy.interpolate import PchipInterpolator
+
+
+def load_100style_frame_cuts(csv_path):
+    """
+    Load 100STYLE frame cuts from CSV.
+    Returns: dict[style_name][code] = (start_frame_1based, stop_frame_1based)
+    """
+    cuts = {}
+    if not os.path.exists(csv_path):
+        return cuts
+
+    with open(csv_path, newline="") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            style = row.get("STYLE_NAME", "").strip()
+            if not style:
+                continue
+            style_cuts = {}
+            for key, value in row.items():
+                if not key or not key.endswith("_START"):
+                    continue
+                code = key[:-6]  # remove "_START"
+                stop_key = f"{code}_STOP"
+                start_val = (value or "").strip()
+                stop_val = (row.get(stop_key) or "").strip()
+                if not start_val or not stop_val:
+                    continue
+                if start_val.upper() == "N/A" or stop_val.upper() == "N/A":
+                    continue
+                try:
+                    style_cuts[code] = (int(start_val), int(stop_val))
+                except ValueError:
+                    continue
+            cuts[style] = style_cuts
+    return cuts
+
+
+def get_100style_cut_for_file(bvh_file_path, cuts):
+    """
+    Infer 100STYLE (style, code) from filename.
+    Example:
+      Angry_BR.bvh -> style=Angry, code=BR
+      Angry_BR_02.bvh -> style=Angry, code=BR
+    Returns:
+      (start_0based, end_exclusive) or (None, None)
+    """
+    p = pathlib.Path(bvh_file_path)
+    style = p.parent.name
+    stem = p.stem
+    prefix = f"{style}_"
+    if not stem.startswith(prefix):
+        return None, None
+
+    suffix = stem[len(prefix):]
+    code = suffix.split("_")[0].strip()
+    if not code:
+        return None, None
+
+    style_cuts = cuts.get(style)
+    if not style_cuts or code not in style_cuts:
+        return None, None
+
+    start_1based, stop_1based = style_cuts[code]
+    # CSV uses frame indices in 1-based inclusive convention.
+    start_0based = max(start_1based - 1, 0)
+    end_exclusive = max(stop_1based, start_0based + 1)
+    return start_0based, end_exclusive
 
 
 def _resample_vec_series(times_src, X_src, times_tgt):
@@ -96,10 +166,20 @@ if __name__ == "__main__":
         type=int,
     )
 
+    parser.add_argument(
+        "--format",
+        choices=["lafan1", "nokov", "xsens", "bvh_xsens"],
+        default="lafan1",
+        help="BVH skeleton format.",
+    )
+
     args = parser.parse_args()
     
     src_folder = args.src_folder
     tgt_folder = args.tgt_folder
+    format_key = "xsens" if args.format == "bvh_xsens" else args.format
+    frame_cuts_csv = "/home/axell/Desktop/dataset_new/raw/100STYLE/Frame_Cuts.csv"
+    cuts_100style = load_100style_frame_cuts(frame_cuts_csv) if format_key == "xsens" else {}
 
    
    
@@ -122,8 +202,23 @@ if __name__ == "__main__":
             
             # Load LAFAN1 trajectory
             try:
-                lafan1_data_frames, actual_human_height = load_lafan1_file(bvh_file_path)
-                src_fps = 30  # LAFAN1 data is typically 30 FPS
+                if format_key == "xsens":
+                    cut_start, cut_end = get_100style_cut_for_file(bvh_file_path, cuts_100style)
+                    xsens_args = SimpleNamespace(
+                        bvh_file=bvh_file_path,
+                        scale=0.01,
+                        reset_to_zero=False,
+                        start=cut_start,
+                        end=cut_end,
+                        bvh_format="3DSM",
+                    )
+                    lafan1_data_frames, actual_human_height, frame_time = load_xsens_file(xsens_args)
+                    src_fps = int(round(1.0 / frame_time))
+                    src_human = "bvh_xsens"
+                else:
+                    lafan1_data_frames, actual_human_height = load_bvh_file(bvh_file_path, format=format_key)
+                    src_fps = 30
+                    src_human = f"bvh_{format_key}"
             except Exception as e:
                 print(f"Error loading {bvh_file_path}: {e}")
                 continue
@@ -131,7 +226,7 @@ if __name__ == "__main__":
             
             # Initialize the retargeting system
             retarget = GMR(
-                src_human="bvh",
+                src_human=src_human,
                 tgt_robot=args.robot,
                 actual_human_height=actual_human_height,
             )

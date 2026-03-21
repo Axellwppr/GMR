@@ -23,6 +23,7 @@ ROBOT_XML_DICT = {
     "tienkung": ASSET_ROOT / "tienkung" / "mjcf" / "tienkung.xml",
     "pal_talos": ASSET_ROOT / "pal_talos" / "talos.xml",
     "fourier_gr3": ASSET_ROOT / "fourier_gr3v2_1_1" / "mjcf" / "gr3v2_1_1_dummy_hand.xml",
+    "xbot_l7": ASSET_ROOT / "xbot_l7" / "mjcf" / "xbot_l7.xml",
 }
 
 IK_CONFIG_DICT = {
@@ -98,6 +99,7 @@ ROBOT_BASE_DICT = {
     "tienkung": "Base_link",
     "pal_talos": "base_link",
     "fourier_gr3": "base_link",
+    "xbot_l7": "pelvis",
 }
 
 VIEWER_CAM_DISTANCE_DICT = {
@@ -119,4 +121,5 @@ VIEWER_CAM_DISTANCE_DICT = {
     "tienkung": 3.0,
     "pal_talos": 3.0,
     "fourier_gr3": 2.0,
+    "xbot_l7": 3.0,
 }

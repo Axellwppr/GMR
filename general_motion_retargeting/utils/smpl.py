@@ -197,7 +197,7 @@ def _resample_trans(times_src, trans_src, times_tgt):
     return np.stack(out, axis=1)
 
 
-def get_smplx_data_offline_fast(smplx_data, body_model, smplx_output=None, tgt_fps=30):
+def get_smplx_data_offline_fast(smplx_data, body_model, tgt_fps=30):
     """
     Must return a dictionary with the following structure:
     {
@@ -221,53 +221,46 @@ def get_smplx_data_offline_fast(smplx_data, body_model, smplx_output=None, tgt_f
     pose_body_tgt = _resample_pose_body(times_src, pose_body_src, times_tgt)
     transl_tgt = _resample_trans(times_src, transl_src, times_tgt)
 
-    frame_count = len(times_tgt)
+    M = len(times_tgt)
     betas = torch.tensor(smplx_data["betas"]).float()
-    if betas.ndim > 1:
-        betas = betas[0]
     if betas.shape[-1] < 16:
-        betas = torch.cat([betas, torch.zeros(16 - betas.shape[-1]).float()], dim=-1)
-    else:
-        betas = betas[:16]
+        betas = torch.cat([betas, torch.zeros(*betas.shape[:-1], 16 - betas.shape[-1]).float()], dim=-1)
     betas = betas.reshape(1, 16)
+    global_orient = torch.tensor(root_orient_tgt).float()
+    body_pose = torch.tensor(pose_body_tgt).float()
+    transl = torch.tensor(transl_tgt).float()
 
     with torch.no_grad():
         smplx_output = body_model(
             betas=betas,
-            global_orient=torch.tensor(root_orient_tgt).float(),
-            body_pose=torch.tensor(pose_body_tgt).float(),
-            transl=torch.tensor(transl_tgt).float(),
-            left_hand_pose=torch.zeros(frame_count, 45).float(),
-            right_hand_pose=torch.zeros(frame_count, 45).float(),
-            jaw_pose=torch.zeros(frame_count, 3).float(),
-            leye_pose=torch.zeros(frame_count, 3).float(),
-            reye_pose=torch.zeros(frame_count, 3).float(),
+            global_orient=global_orient,
+            body_pose=body_pose,
+            transl=transl,
+            left_hand_pose=torch.zeros(M, 45).float(),
+            right_hand_pose=torch.zeros(M, 45).float(),
+            jaw_pose=torch.zeros(M, 3).float(),
+            leye_pose=torch.zeros(M, 3).float(),
+            reye_pose=torch.zeros(M, 3).float(),
             return_full_pose=True,
             return_vert=False,
         )
 
     joints = smplx_output.joints.detach().cpu().numpy().squeeze()
-    full_body_pose = smplx_output.full_pose.detach().cpu().numpy().reshape(frame_count, -1, 3)
+    full_body_pose = smplx_output.full_pose.detach().cpu().numpy().reshape(M, -1, 3)
     joint_names = JOINT_NAMES[: len(body_model.parents)]
     parents = body_model.parents
 
     smplx_data_frames = []
-    for curr_frame in range(frame_count):
+    for f in range(M):
         result = {}
-        single_global_orient = root_orient_tgt[curr_frame]
-        single_full_body_pose = full_body_pose[curr_frame]
-        single_joints = joints[curr_frame]
         joint_orientations = []
-        for i, joint_name in enumerate(joint_names):
+        for i, jname in enumerate(joint_names):
             if i == 0:
-                rot = R.from_rotvec(single_global_orient)
+                rot = R.from_rotvec(root_orient_tgt[f])
             else:
-                rot = joint_orientations[parents[i]] * R.from_rotvec(
-                    single_full_body_pose[i].squeeze()
-                )
+                rot = joint_orientations[parents[i]] * R.from_rotvec(full_body_pose[f, i].squeeze())
             joint_orientations.append(rot)
-            result[joint_name] = (single_joints[i], rot.as_quat(scalar_first=True))
-
+            result[jname] = (joints[f, i], rot.as_quat(scalar_first=True))
 
         smplx_data_frames.append(result)
 

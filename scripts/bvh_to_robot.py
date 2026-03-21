@@ -1,9 +1,11 @@
 import argparse
 import pathlib
 import time
+from types import SimpleNamespace
 from general_motion_retargeting import GeneralMotionRetargeting as GMR
 from general_motion_retargeting import RobotMotionViewer
 from general_motion_retargeting.utils.lafan1 import load_bvh_file
+from general_motion_retargeting.utils.xsens import load_xsens_file
 from rich import print
 from tqdm import tqdm
 import os
@@ -20,27 +22,20 @@ if __name__ == "__main__":
         required=True,
         type=str,
     )
-    
+
     parser.add_argument(
         "--format",
-        choices=["lafan1", "nokov"],
+        choices=["lafan1", "nokov", "xsens", "bvh_xsens"],
         default="lafan1",
-    )
-    
-    parser.add_argument(
-        "--loop",
-        default=False,
-        action="store_true",
-        help="Loop the motion.",
+        help="BVH skeleton format.",
     )
     
     parser.add_argument(
         "--robot",
-        choices=["unitree_g1", "unitree_g1_with_hands", "booster_t1", "stanford_toddy", "fourier_n1", "engineai_pm01", "pal_talos"],
+        choices=["unitree_g1", "unitree_g1_with_hands", "unitree_h1_2", "booster_t1", "stanford_toddy", "fourier_n1", "engineai_pm01"],
         default="unitree_g1",
     )
-    
-    
+        
     parser.add_argument(
         "--record_video",
         action="store_true",
@@ -64,15 +59,11 @@ if __name__ == "__main__":
         default=None,
         help="Path to save the robot motion.",
     )
-    
-    parser.add_argument(
-        "--motion_fps",
-        default=30,
-        type=int,
-    )
+
     
     args = parser.parse_args()
     
+
     if args.save_path is not None:
         save_dir = os.path.dirname(args.save_path)
         if save_dir:  # Only create directory if it's not empty
@@ -80,18 +71,33 @@ if __name__ == "__main__":
         qpos_list = []
 
     
-    # Load SMPLX trajectory
-    lafan1_data_frames, actual_human_height = load_bvh_file(args.bvh_file, format=args.format)
+    format_key = "xsens" if args.format == "bvh_xsens" else args.format
+
+    # Load BVH trajectory
+    if format_key == "xsens":
+        xsens_args = SimpleNamespace(
+            bvh_file=args.bvh_file,
+            scale=0.01,
+            reset_to_zero=False,
+            start=None,
+            end=None,
+            bvh_format="3DSM",
+        )
+        lafan1_data_frames, actual_human_height, frame_time = load_xsens_file(xsens_args)
+        src_human = "bvh_xsens"
+        motion_fps = int(round(1.0 / frame_time))
+    else:
+        lafan1_data_frames, actual_human_height = load_bvh_file(args.bvh_file, format=format_key)
+        src_human = f"bvh_{format_key}"
+        motion_fps = 30
     
     
     # Initialize the retargeting system
     retargeter = GMR(
-        src_human=f"bvh_{args.format}",
+        src_human=src_human,
         tgt_robot=args.robot,
         actual_human_height=actual_human_height,
     )
-
-    motion_fps = args.motion_fps
     
     robot_motion_viewer = RobotMotionViewer(robot_type=args.robot,
                                             motion_fps=motion_fps,
@@ -114,11 +120,8 @@ if __name__ == "__main__":
     
     # Start the viewer
     i = 0
-    
 
-
-    while True:
-        
+    while i < len(lafan1_data_frames):
         # FPS measurement
         fps_counter += 1
         current_time = time.time()
@@ -136,7 +139,6 @@ if __name__ == "__main__":
 
         # retarget
         qpos = retargeter.retarget(smplx_data)
-        
 
         # visualize
         robot_motion_viewer.step(
@@ -145,18 +147,11 @@ if __name__ == "__main__":
             dof_pos=qpos[7:],
             human_motion_data=retargeter.scaled_human_data,
             rate_limit=args.rate_limit,
-            follow_camera=True,
             # human_pos_offset=np.array([0.0, 0.0, 0.0])
         )
 
-        if args.loop:
-            i = (i + 1) % len(lafan1_data_frames)
-        else:
-            i += 1
-            if i >= len(lafan1_data_frames):
-                break
-   
-        
+        i += 1
+
         if args.save_path is not None:
             qpos_list.append(qpos)
     
