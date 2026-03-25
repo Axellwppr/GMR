@@ -46,6 +46,7 @@ IK_CONFIG_DICT = {
         "pnd_adam_lite": IK_CONFIG_ROOT / "smplx_to_adam.json",
         "tienkung": IK_CONFIG_ROOT / "smplx_to_tienkung.json",
         "fourier_gr3": IK_CONFIG_ROOT / "smplx_to_gr3.json",
+        "xbot_l7": IK_CONFIG_ROOT / "smplx_to_l7.json",
     },
     "bvh_lafan1":{
         "unitree_g1": IK_CONFIG_ROOT / "bvh_lafan1_to_g1.json",
@@ -73,6 +74,7 @@ IK_CONFIG_DICT = {
     
     "xrobot":{
         "unitree_g1": IK_CONFIG_ROOT / "xrobot_to_g1.json",
+        "xbot_l7": IK_CONFIG_ROOT / "xrobot_to_l7.json",
     },
     "xsens_mvn": {
         "unitree_g1": IK_CONFIG_ROOT / "xsens_mvn_to_g1.json",
