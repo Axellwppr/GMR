@@ -115,7 +115,12 @@
                   <joint name="left_ankle_roll_joint" pos="0 0 0" axis="1 0 0" range="-0.31 0.31" actuatorfrcrange="-50 50" />
                   <body name="left_ankle_roll_toe_link" pos="0.12 0 0" />
                   <body name="left_toe_link" pos="0.06 0 -0.05" />
-                  <geom class="visual" mesh="left_ankle_roll_link" />
+                  <geom
+                    name="left_ankle_roll_link_visual_debug"
+                    class="visual"
+                    mesh="left_ankle_roll_link"
+                    rgba="1 0 0 1"
+                  />
                   <geom name="left_foot1_collision" class="foot_capsule" fromto="-0.078 -0.032 -0.061 0.148 -0.032 -0.061" />
                   <geom name="left_foot2_collision" class="foot_capsule" fromto="-0.074 -0.022 -0.061 0.152 -0.022 -0.061" />
                   <geom name="left_foot3_collision" class="foot_capsule" fromto="-0.080 -0.011 -0.061 0.156 -0.011 -0.061" />
@@ -156,7 +161,12 @@
                   <joint name="right_ankle_roll_joint" pos="0 0 0" axis="1 0 0" range="-0.31 0.31" actuatorfrcrange="-50 50" />
                   <body name="right_ankle_roll_toe_link" pos="0.12 0 0" />
                   <body name="right_toe_link" pos="0.06 0 -0.05" />
-                  <geom class="visual" mesh="right_ankle_roll_link" />
+                  <geom
+                    name="right_ankle_roll_link_visual_debug"
+                    class="visual"
+                    mesh="right_ankle_roll_link"
+                    rgba="1 0 0 1"
+                  />
                   <geom name="right_foot1_collision" class="foot_capsule" fromto="-0.078 -0.032 -0.061 0.148 -0.032 -0.061" />
                   <geom name="right_foot2_collision" class="foot_capsule" fromto="-0.074 -0.022 -0.061 0.152 -0.022 -0.061" />
                   <geom name="right_foot3_collision" class="foot_capsule" fromto="-0.080 -0.011 -0.061 0.156 -0.011 -0.061" />

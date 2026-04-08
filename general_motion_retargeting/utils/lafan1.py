@@ -47,3 +47,7 @@ def load_bvh_file(bvh_file, format="lafan1"):
     return frames, human_height
 
 
+def load_lafan1_file(bvh_file):
+    """Backward-compatible alias used by ik_config_manager."""
+    return load_bvh_file(bvh_file, format="lafan1")
+
