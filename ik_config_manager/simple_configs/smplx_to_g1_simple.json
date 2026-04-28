@@ -1,0 +1,138 @@
+{
+  "human_root_name": "pelvis",
+  "robot_root_name": "pelvis",
+  "ground_height": 0.0,
+  "human_height_assumption": 1.8,
+  "use_ik_match_table1": true,
+  "use_ik_match_table2": true,
+  "human_scale_table": {
+    "pelvis": 0.9,
+    "spine3": 0.9,
+    "left_hip": 0.9,
+    "right_hip": 0.9,
+    "left_knee": 0.9,
+    "right_knee": 0.9,
+    "left_foot": 0.9,
+    "right_foot": 0.9,
+    "left_shoulder": 0.8,
+    "right_shoulder": 0.8,
+    "left_elbow": 0.8,
+    "right_elbow": 0.8,
+    "left_wrist": 0.8,
+    "right_wrist": 0.8
+  },
+  "mappings": [
+    {
+      "robot_link": "pelvis",
+      "human_bone": "pelvis",
+      "table1_pos": 100.0,
+      "table1_rot": 10.0,
+      "table2_pos": 100.0,
+      "table2_rot": 5.0
+    },
+    {
+      "robot_link": "left_hip_roll_link",
+      "human_bone": "left_hip",
+      "table1_pos": 0.0,
+      "table1_rot": 10.0,
+      "table2_pos": 10.0,
+      "table2_rot": 5.0
+    },
+    {
+      "robot_link": "left_knee_link",
+      "human_bone": "left_knee",
+      "table1_pos": 0.0,
+      "table1_rot": 10.0,
+      "table2_pos": 10.0,
+      "table2_rot": 5.0
+    },
+    {
+      "robot_link": "left_toe_link",
+      "human_bone": "left_foot",
+      "table1_pos": 100.0,
+      "table1_rot": 10.0,
+      "table2_pos": 100.0,
+      "table2_rot": 50.0
+    },
+    {
+      "robot_link": "right_hip_roll_link",
+      "human_bone": "right_hip",
+      "table1_pos": 0.0,
+      "table1_rot": 10.0,
+      "table2_pos": 10.0,
+      "table2_rot": 5.0
+    },
+    {
+      "robot_link": "right_knee_link",
+      "human_bone": "right_knee",
+      "table1_pos": 0.0,
+      "table1_rot": 10.0,
+      "table2_pos": 10.0,
+      "table2_rot": 5.0
+    },
+    {
+      "robot_link": "right_toe_link",
+      "human_bone": "right_foot",
+      "table1_pos": 100.0,
+      "table1_rot": 10.0,
+      "table2_pos": 100.0,
+      "table2_rot": 50.0
+    },
+    {
+      "robot_link": "torso_link",
+      "human_bone": "spine3",
+      "table1_pos": 0.0,
+      "table1_rot": 10.0,
+      "table2_pos": 0.0,
+      "table2_rot": 10.0
+    },
+    {
+      "robot_link": "left_shoulder_yaw_link",
+      "human_bone": "left_shoulder",
+      "table1_pos": 0.0,
+      "table1_rot": 10.0,
+      "table2_pos": 10.0,
+      "table2_rot": 5.0
+    },
+    {
+      "robot_link": "left_elbow_link",
+      "human_bone": "left_elbow",
+      "table1_pos": 0.0,
+      "table1_rot": 10.0,
+      "table2_pos": 10.0,
+      "table2_rot": 5.0
+    },
+    {
+      "robot_link": "left_wrist_yaw_link",
+      "human_bone": "left_wrist",
+      "table1_pos": 0.0,
+      "table1_rot": 10.0,
+      "table2_pos": 10.0,
+      "table2_rot": 5.0
+    },
+    {
+      "robot_link": "right_shoulder_yaw_link",
+      "human_bone": "right_shoulder",
+      "table1_pos": 0.0,
+      "table1_rot": 10.0,
+      "table2_pos": 10.0,
+      "table2_rot": 5.0
+    },
+    {
+      "robot_link": "right_elbow_link",
+      "human_bone": "right_elbow",
+      "table1_pos": 0.0,
+      "table1_rot": 10.0,
+      "table2_pos": 10.0,
+      "table2_rot": 5.0
+    },
+    {
+      "robot_link": "right_wrist_yaw_link",
+      "human_bone": "right_wrist",
+      "table1_pos": 0.0,
+      "table1_rot": 10.0,
+      "table2_pos": 10.0,
+      "table2_rot": 5.0
+    }
+  ]
+}

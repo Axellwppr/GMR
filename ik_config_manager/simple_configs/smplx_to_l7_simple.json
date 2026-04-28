@@ -1,0 +1,139 @@
+{
+  "human_root_name": "pelvis",
+  "robot_root_name": "pelvis",
+  "ground_height": -0.03,
+  "human_height_assumption": 1.75,
+  "use_ik_match_table1": true,
+  "use_ik_match_table2": true,
+  "human_scale_table": {
+    "pelvis": 1.0,
+    "spine3": 1.0,
+    "left_hip": 1.0,
+    "right_hip": 1.0,
+    "left_knee": 1.2,
+    "right_knee": 1.2,
+    "left_foot": 1.0,
+    "right_foot": 1.0,
+    "left_shoulder": 0.95,
+    "right_shoulder": 0.95,
+    "left_elbow": 1.2,
+    "right_elbow": 1.2,
+    "left_wrist": 1.2,
+    "right_wrist": 1.2
+  },
+  "mappings": [
+    {
+      "robot_link": "pelvis",
+      "human_bone": "pelvis",
+      "table1_pos": 0.0,
+      "table1_rot": 10.0,
+      "table2_pos": 10.0,
+      "table2_rot": 5.0
+    },
+    {
+      "robot_link": "left_hip_roll_link",
+      "human_bone": "left_hip",
+      "table1_pos": 0.0,
+      "table1_rot": 10.0,
+      "table2_pos": 10.0,
+      "table2_rot": 5.0
+    },
+    {
+      "robot_link": "left_knee_link",
+      "human_bone": "left_knee",
+      "table1_pos": 0.0,
+      "table1_rot": 10.0,
+      "table2_pos": 10.0,
+      "table2_rot": 5.0
+    },
+    {
+      "robot_link": "left_ankle_roll_link",
+      "human_bone": "left_foot",
+      "table1_pos": 100.0,
+      "table1_rot": 10.0,
+      "table2_pos": 100.0,
+      "table2_rot": 10.0
+    },
+    {
+      "robot_link": "right_hip_roll_link",
+      "human_bone": "right_hip",
+      "table1_pos": 0.0,
+      "table1_rot": 10.0,
+      "table2_pos": 10.0,
+      "table2_rot": 5.0
+    },
+    {
+      "robot_link": "right_knee_link",
+      "human_bone": "right_knee",
+      "table1_pos": 0.0,
+      "table1_rot": 10.0,
+      "table2_pos": 10.0,
+      "table2_rot": 5.0
+    },
+    {
+      "robot_link": "right_ankle_roll_link",
+      "human_bone": "right_foot",
+      "table1_pos": 100.0,
+      "table1_rot": 10.0,
+      "table2_pos": 100.0,
+      "table2_rot": 10.0
+    },
+    {
+      "robot_link": "torso_link",
+      "human_bone": "spine3",
+      "table1_pos": 0.0,
+      "table1_rot": 10.0,
+      "table2_pos": 0.0,
+      "table2_rot": 10.0
+    },
+    {
+      "robot_link": "left_shoulder_roll_link",
+      "human_bone": "left_shoulder",
+      "table1_pos": 0.0,
+      "table1_rot": 10.0,
+      "table2_pos": 10.0,
+      "table2_rot": 5.0
+    },
+    {
+      "robot_link": "left_elbow_pitch_link",
+      "human_bone": "left_elbow",
+      "table1_pos": 0.0,
+      "table1_rot": 10.0,
+      "table2_pos": 10.0,
+      "table2_rot": 5.0
+    },
+    {
+      "robot_link": "left_end_effector_link",
+      "human_bone": "left_wrist",
+      "table1_pos": 0.0,
+      "table1_rot": 10.0,
+      "table2_pos": 10.0,
+      "table2_rot": 5.0
+    },
+    {
+      "robot_link": "right_shoulder_roll_link",
+      "human_bone": "right_shoulder",
+      "table1_pos": 0.0,
+      "table1_rot": 10.0,
+      "table2_pos": 10.0,
+      "table2_rot": 5.0
+    },
+    {
+      "robot_link": "right_elbow_pitch_link",
+      "human_bone": "right_elbow",
+      "table1_pos": 0.0,
+      "table1_rot": 10.0,
+      "table2_pos": 10.0,
+      "table2_rot": 5.0
+    },
+    {
+      "robot_link": "right_end_effector_link",
+      "human_bone": "right_wrist",
+      "table1_pos": 0.0,
+      "table1_rot": 10.0,
+      "table2_pos": 10.0,
+      "table2_rot": 5.0
+    }
+  ],
+  "notes": "Shared L7 simple config for generating smplx and derived xrobot IK configs. Lower body uses hip_roll for both sources, ankle_roll for feet, and reduced pelvis/torso weights."
+}

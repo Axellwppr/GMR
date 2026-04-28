@@ -53,7 +53,7 @@ if __name__ == "__main__":
         env.step(motion_root_pos[frame_idx], 
                 motion_root_rot[frame_idx], 
                 motion_dof_pos[frame_idx], 
-                rate_limit=True)
+                rate_limit=True, follow_camera=False)
         frame_idx += 1
         if frame_idx >= len(motion_root_pos):
             frame_idx = 0
